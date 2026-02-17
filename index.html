@@ -3,44 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>علي الشمري | الاحترافي</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <title>علي الشمري | التجربة السينمائية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Cairo:wght@400;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --gold: #D4AF37; --black: #000; }
-        body { background: var(--black); color: white; font-family: 'Cairo', sans-serif; margin: 0; }
+        :root { --gold: #D4AF37; --black: #050505; }
+        body { background: var(--black); color: white; font-family: 'Cairo', sans-serif; margin: 0; overflow-x: hidden; }
         
-        /* Header */
-        nav { position: fixed; top: 0; width: 100%; padding: 20px 5%; display: flex; justify-content: space-between; z-index: 1000; background: rgba(0,0,0,0.8); }
-        .hero { height: 40vh; display: flex; align-items: center; justify-content: center; text-align: center; }
-        .hero h1 { font-family: 'Syne'; font-size: 8vw; color: white; margin: 0; line-height: 1; }
+        /* Header & Hero */
+        nav { position: fixed; top: 0; width: 100%; padding: 30px 5%; display: flex; justify-content: space-between; z-index: 1000; background: linear-gradient(to bottom, black, transparent); }
+        .hero { height: 50vh; display: flex; align-items: center; justify-content: center; text-align: center; border-bottom: 1px solid #111; }
+        .hero h1 { font-family: 'Syne'; font-size: clamp(3rem, 10vw, 8rem); margin: 0; text-transform: uppercase; }
 
-        /* Grid */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; padding: 50px 5%; }
-        .card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 12px; overflow: hidden; position: relative; }
-        
-        .video-box { position: relative; padding-bottom: 56.25%; height: 0; }
-        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        /* Grid & Cards */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px; padding: 50px 5%; }
+        .card { background: #0a0a0a; border-radius: 4px; overflow: hidden; position: relative; border: 1px solid #1a1a1a; transition: 0.5s; }
+        .card:hover { transform: scale(1.02); border-color: var(--gold); }
 
-        .card-content { padding: 20px; }
-        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; display: block; }
+        /* Custom Video UI */
+        .video-wrapper { position: relative; padding-bottom: 56.25%; cursor: pointer; background: #000; }
+        .video-wrapper img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.7; transition: 0.5s; }
+        .video-wrapper:hover img { opacity: 0.4; }
+        .play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 50px; color: white; opacity: 0.8; z-index: 2; pointer-events: none; }
         
-        /* Social Stats */
-        .stats { display: flex; justify-content: space-between; color: #666; font-size: 13px; border-top: 1px solid #111; padding-top: 15px; }
-        .stats div { cursor: pointer; transition: 0.3s; }
-        .stats div:hover { color: var(--gold); }
-        .stats i { margin-left: 5px; }
+        .card-body { padding: 25px; }
+        .video-title { font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 15px; display: block; }
+        
+        /* Interactive Social Bar */
+        .social-bar { display: flex; justify-content: space-between; padding-top: 15px; border-top: 1px solid #111; color: #555; font-size: 13px; }
+        .social-bar div { cursor: pointer; transition: 0.3s; }
+        .social-bar div:hover { color: var(--gold); }
+        .social-bar i { margin-left: 5px; }
     </style>
 </head>
 <body>
-    <nav><div style="font-family: 'Syne'; color: var(--gold);">ALSHAMMARI</div></nav>
-    <section class="hero"><h1>ALI SHAMMARI</h1></section>
-    <div class="grid" id="content"></div>
+
+    <nav><div style="font-family: 'Syne'; color: var(--gold); font-size: 20px;">ALSHAMMARI</div></nav>
+
+    <section class="hero">
+        <h1 style="color: transparent; -webkit-text-stroke: 1px var(--gold);">ALI <span style="color: white; -webkit-text-stroke: 0;">SHAMMARI</span></h1>
+    </section>
+
+    <div class="grid" id="main-content"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script>
-        const firebaseConfig = { /* نفس معلوماتك السابقة */ 
+        const firebaseConfig = {
             apiKey: "AIzaSyBVLTKpaHzLLY0t5xzG5ArzllpqcnCVVAk",
             authDomain: "shmri26.firebaseapp.com",
             projectId: "shmri26",
@@ -49,30 +58,38 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        function getYTID(url) {
+        function getID(url) {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
             const match = url.match(regExp);
             return (match && match[2].length === 11) ? match[2] : null;
         }
 
+        // دالة تشغيل الفيديو عند الضغط (إخفاء يوتيوب)
+        window.playVideo = function(id, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&modestbranding=1&rel=0&controls=1" style="position:absolute;top:0;left:0;width:100%;height:100%;" allow="autoplay" allowfullscreen></iframe>`;
+        }
+
         db.collection("portfolio").orderBy("date", "desc").onSnapshot(snap => {
-            const out = document.getElementById('content');
-            out.innerHTML = ""; // منع التكرار
+            const out = document.getElementById('main-content');
+            out.innerHTML = ""; 
             snap.forEach(doc => {
                 const d = doc.data();
-                const vid = getYTID(d.url);
+                const vid = getID(d.url);
+                const cId = `vid-${doc.id}`;
                 if(vid) {
                     out.innerHTML += `
                         <div class="card">
-                            <div class="video-box">
-                                <iframe src="https://www.youtube.com/embed/${vid}?modestbranding=1"></iframe>
+                            <div class="video-wrapper" id="${cId}" onclick="playVideo('${vid}', '${cId}')">
+                                <img src="https://img.youtube.com/vi/${vid}/maxresdefault.jpg">
+                                <div class="play-btn"><i class="fas fa-play-circle"></i></div>
                             </div>
-                            <div class="card-content">
-                                <span class="card-title">${d.title || 'بدون عنوان'}</span>
-                                <div class="stats">
-                                    <div onclick="alert('شكراً للإعجاب!')"><i class="fas fa-heart"></i> ${d.likes || 0}</div>
-                                    <div><i class="fas fa-comment"></i> تعليق</div>
-                                    <div><i class="fas fa-eye"></i> ${d.views || 0}</div>
+                            <div class="card-body">
+                                <span class="video-title">${d.title}</span>
+                                <div class="social-bar">
+                                    <div onclick="alert('شكراً للإعجاب!')"><i class="fas fa-heart"></i> ${d.likes}</div>
+                                    <div onclick="alert('سيتم تفعيل التعليقات قريباً')"><i class="fas fa-comment"></i> تعليق</div>
+                                    <div><i class="fas fa-eye"></i> ${d.views}</div>
                                 </div>
                             </div>
                         </div>`;
