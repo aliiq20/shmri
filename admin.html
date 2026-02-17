@@ -2,26 +2,30 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة المحتوى | علي الشمري</title>
+    <title>إدارة محتوى علي الشمري</title>
     <style>
-        body { font-family: sans-serif; padding: 10%; background: #fff; color: #000; }
-        .panel { border: 10px solid #000; padding: 40px; }
-        input, select, button { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #000; font-size: 18px; }
-        button { background: #000; color: #fff; cursor: pointer; font-weight: bold; }
+        body { font-family: sans-serif; padding: 5%; background: #f4f4f4; }
+        .box { background: white; padding: 20px; border: 2px solid #000; margin-bottom: 30px; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; }
+        button { background: black; color: white; cursor: pointer; font-weight: bold; }
+        .list-item { display: flex; align-items: center; justify-content: space-between; background: white; padding: 15px; border-bottom: 1px solid #eee; }
+        .del-btn { background: red; width: 80px; }
     </style>
 </head>
 <body>
-    <div class="panel">
-        <h1>إضافة عمل جديد</h1>
-        <input type="text" id="url" placeholder="الصق رابط فيديو يوتيوب هنا">
+    <div class="box">
+        <h2>إضافة عمل جديد</h2>
+        <input type="text" id="title" placeholder="عنوان الفيديو (مثلاً: إعلان سيارة مرسيدس)">
+        <input type="text" id="url" placeholder="رابط اليوتيوب">
         <select id="cat">
-            <option value="AUTOMOTIVE">السيارات والعقارات</option>
-            <option value="COMMERCIAL">المطاعم والشركات</option>
-            <option value="WEDDING">الأعراس والمناسبات</option>
+            <option value="AUTOMOTIVE">السيارات</option>
+            <option value="COMMERCIAL">المطاعم</option>
         </select>
-        <button onclick="add()">نشر الآن</button>
-        <p id="st"></p>
+        <button onclick="add()">نشر العمل</button>
     </div>
+
+    <h2>الأعمال المنشورة حالياً</h2>
+    <div id="manager"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -30,21 +34,35 @@
             apiKey: "AIzaSyBVLTKpaHzLLY0t5xzG5ArzllpqcnCVVAk",
             authDomain: "shmri26.firebaseapp.com",
             projectId: "shmri26",
-            storageBucket: "shmri26.firebasestorage.app",
             appId: "1:995693247986:web:0c8711c43de9a94cf5bf6b"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         function add() {
+            const title = document.getElementById('title').value;
             const url = document.getElementById('url').value;
-            const category = document.getElementById('cat').value;
-            if(!url) return alert("حط الرابط اولاً");
-            db.collection("portfolio").add({ url, category, date: new Date() }).then(() => {
-                document.getElementById('st').innerText = "تم النشر بنجاح!";
-                document.getElementById('url').value = "";
-            });
+            const cat = document.getElementById('cat').value;
+            if(!url || !title) return alert("امسح الحقول أولاً");
+            db.collection("portfolio").add({ 
+                title, url, category: cat, date: new Date(), likes: 0, views: Math.floor(Math.random() * 500) + 100 
+            }).then(() => location.reload());
         }
+
+        db.collection("portfolio").orderBy("date", "desc").onSnapshot(snap => {
+            const m = document.getElementById('manager');
+            m.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                m.innerHTML += `
+                    <div class="list-item">
+                        <span><b>${d.title}</b> (${d.category})</span>
+                        <button class="del-btn" onclick="del('${doc.id}')">حذف</button>
+                    </div>`;
+            });
+        });
+
+        function del(id) { if(confirm("هل أنت متأكد من الحذف؟")) db.collection("portfolio").doc(id).delete(); }
     </script>
 </body>
 </html>
