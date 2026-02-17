@@ -3,42 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALI ALSHAMMARI | علي الشمري</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Cairo:wght@300;900&display=swap" rel="stylesheet">
+    <title>علي الشمري | الاحترافي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --gold: #D4AF37; --black: #000; }
         body { background: var(--black); color: white; font-family: 'Cairo', sans-serif; margin: 0; }
-        nav { position: fixed; top: 0; width: 100%; padding: 30px 5%; display: flex; justify-content: space-between; z-index: 1000; mix-blend-mode: difference; }
-        .hero { height: 60vh; display: flex; align-items: center; padding: 0 5%; background: radial-gradient(circle at center, #111 0%, #000 70%); }
-        .hero h1 { font-family: 'Syne'; font-size: 10vw; line-height: 0.9; margin: 0; color: transparent; -webkit-text-stroke: 1px var(--gold); }
-        .hero h1 span { color: white; -webkit-text-stroke: 0; display: block; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; padding: 50px 5%; }
-        .v-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 8px; overflow: hidden; transition: 0.5s; }
-        .v-card:hover { border-color: var(--gold); transform: translateY(-5px); }
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-        .info { padding: 15px; font-size: 12px; color: var(--gold); text-align: center; font-weight: bold; border-top: 1px solid #111; }
+        
+        /* Header */
+        nav { position: fixed; top: 0; width: 100%; padding: 20px 5%; display: flex; justify-content: space-between; z-index: 1000; background: rgba(0,0,0,0.8); }
+        .hero { height: 40vh; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .hero h1 { font-family: 'Syne'; font-size: 8vw; color: white; margin: 0; line-height: 1; }
+
+        /* Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; padding: 50px 5%; }
+        .card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 12px; overflow: hidden; position: relative; }
+        
+        .video-box { position: relative; padding-bottom: 56.25%; height: 0; }
+        .video-box iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+        .card-content { padding: 20px; }
+        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; display: block; }
+        
+        /* Social Stats */
+        .stats { display: flex; justify-content: space-between; color: #666; font-size: 13px; border-top: 1px solid #111; padding-top: 15px; }
+        .stats div { cursor: pointer; transition: 0.3s; }
+        .stats div:hover { color: var(--gold); }
+        .stats i { margin-left: 5px; }
     </style>
 </head>
 <body>
-    <nav><div style="font-family: 'Syne'; font-size: 20px; color: var(--gold);">ALSHAMMARI</div></nav>
-    <section class="hero"><h1>ALI<span>SHAMMARI</span></h1></section>
+    <nav><div style="font-family: 'Syne'; color: var(--gold);">ALSHAMMARI</div></nav>
+    <section class="hero"><h1>ALI SHAMMARI</h1></section>
     <div class="grid" id="content"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script>
-        const firebaseConfig = {
+        const firebaseConfig = { /* نفس معلوماتك السابقة */ 
             apiKey: "AIzaSyBVLTKpaHzLLY0t5xzG5ArzllpqcnCVVAk",
             authDomain: "shmri26.firebaseapp.com",
             projectId: "shmri26",
-            storageBucket: "shmri26.firebasestorage.app",
             appId: "1:995693247986:web:0c8711c43de9a94cf5bf6b"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // دالة احترافية لاستخراج كود الفيديو مهما كان نوع الرابط
         function getYTID(url) {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
             const match = url.match(regExp);
@@ -47,17 +57,24 @@
 
         db.collection("portfolio").orderBy("date", "desc").onSnapshot(snap => {
             const out = document.getElementById('content');
-            out.innerHTML = "";
+            out.innerHTML = ""; // منع التكرار
             snap.forEach(doc => {
-                const data = doc.data();
-                const videoId = getYTID(data.url);
-                if(videoId) {
+                const d = doc.data();
+                const vid = getYTID(d.url);
+                if(vid) {
                     out.innerHTML += `
-                        <div class="v-card">
-                            <div class="video-container">
-                                <iframe src="https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0" allowfullscreen></iframe>
+                        <div class="card">
+                            <div class="video-box">
+                                <iframe src="https://www.youtube.com/embed/${vid}?modestbranding=1"></iframe>
                             </div>
-                            <div class="info">${data.category}</div>
+                            <div class="card-content">
+                                <span class="card-title">${d.title || 'بدون عنوان'}</span>
+                                <div class="stats">
+                                    <div onclick="alert('شكراً للإعجاب!')"><i class="fas fa-heart"></i> ${d.likes || 0}</div>
+                                    <div><i class="fas fa-comment"></i> تعليق</div>
+                                    <div><i class="fas fa-eye"></i> ${d.views || 0}</div>
+                                </div>
+                            </div>
                         </div>`;
                 }
             });
