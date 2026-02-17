@@ -2,44 +2,50 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إدارة علي الشمري</title>
+    <title>إدارة أقسام علي الشمري</title>
     <style>
-        body { font-family: sans-serif; padding: 5%; background: #eee; }
-        .admin-box { background: #fff; padding: 30px; border: 4px solid #000; }
-        input, button { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ccc; font-size: 16px; }
+        body { font-family: sans-serif; padding: 5%; background: #f0f0f0; }
+        .form-panel { background: #fff; padding: 30px; border: 5px solid #000; border-radius: 10px; }
+        input, select, button { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #000; font-size: 16px; }
         button { background: #000; color: #fff; cursor: pointer; font-weight: bold; }
-        .item { display: flex; justify-content: space-between; padding: 15px; background: #fff; border: 1px solid #ddd; margin-top: 10px; }
+        .item-row { display: flex; justify-content: space-between; padding: 10px; background: #fff; border: 1px solid #ddd; margin-top: 5px; }
     </style>
 </head>
 <body>
-    <div class="admin-box">
-        <h2>نشر عمل جديد</h2>
-        <input type="text" id="t" placeholder="عنوان العمل">
-        <input type="text" id="u" placeholder="رابط يوتيوب">
-        <input type="number" id="v" placeholder="ابدأ المشاهدات من رقم (مثلاً: 100)">
-        <button onclick="publish()">نشر العمل فوراً</button>
+    <div class="form-panel">
+        <h2>نشر عمل في قسم مخصص</h2>
+        <input type="text" id="title" placeholder="عنوان الفيديو (مثلاً: حفل تخرج 2026)">
+        <input type="text" id="url" placeholder="رابط يوتيوب">
+        <select id="category">
+            <option value="cars">قسم السيارات والمعارض</option>
+            <option value="beauty">قسم مراكز التجميل</option>
+            <option value="food">قسم المطاعم والكافيهات</option>
+            <option value="realestate">قسم البنايات والعقارات</option>
+            <option value="weddings">قسم الاعراس والخطوبات</option>
+            <option value="personal">قسم الجلسات الشخصية والتخرج</option>
+        </select>
+        <button onclick="submitWork()">نشر العمل الآن</button>
     </div>
     <div id="list"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script>
-        const firebaseConfig = { /* نفس معلوماتك */ };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const firebaseConfig = { apiKey: "AIzaSyBVLTKpaHzLLY0t5xzG5ArzllpqcnCVVAk", projectId: "shmri26", appId: "1:995693247986:web:0c8711c43de9a94cf5bf6b" };
+        firebase.initializeApp(firebaseConfig); const db = firebase.firestore();
 
-        function publish() {
-            const title = document.getElementById('t').value;
-            const url = document.getElementById('u').value;
-            const views = parseInt(document.getElementById('v').value) || 0;
-            if(!url || !title) return;
-            db.collection("portfolio").add({ title, url, views, likes: 0, date: new Date() }).then(() => location.reload());
+        function submitWork() {
+            const title = document.getElementById('title').value;
+            const url = document.getElementById('url').value;
+            const category = document.getElementById('category').value;
+            if(!url || !title) return alert("املأ البيانات");
+            db.collection("portfolio").add({ title, url, category, likes: 0, views: 0, date: new Date() }).then(() => location.reload());
         }
 
         db.collection("portfolio").orderBy("date", "desc").onSnapshot(snap => {
             const l = document.getElementById('list'); l.innerHTML = "";
             snap.forEach(doc => {
-                l.innerHTML += `<div class="item"><span>${doc.data().title}</span><button style="width:80px;background:red" onclick="db.collection('portfolio').doc('${doc.id}').delete()">حذف</button></div>`;
+                l.innerHTML += `<div class="item-row"><span>${doc.data().title} [${doc.data().category}]</span><button style="width:80px;background:red" onclick="db.collection('portfolio').doc('${doc.id}').delete()">حذف</button></div>`;
             });
         });
     </script>
